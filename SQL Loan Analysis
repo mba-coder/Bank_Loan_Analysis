@@ -1,0 +1,215 @@
+/* =========================================================
+   Project: Bank Loan Analysis
+   Author: Aryaman Pillay
+   Tool: SQL Server
+   Description:
+   KPI, risk, trend, and segmentation analysis on loan data.
+   ========================================================= */
+
+
+/* ===============================
+   CORE LOAN KPIs
+   =============================== */
+
+-- Total Loan Applications
+SELECT
+    COUNT(id) AS Total_Loan_Applications
+FROM bank_loan_data;
+
+
+-- Total Loan Applications for December
+SELECT
+    COUNT(id) AS Total_Loan_Applications_December
+FROM bank_loan_data
+WHERE MONTH(issue_date) = 12;
+
+
+-- Total Funded Amount
+SELECT
+    SUM(loan_amount) AS Total_Funded_Amount
+FROM bank_loan_data;
+
+
+-- Total Amount Received
+SELECT
+    SUM(total_payment) AS Total_Amount_Received
+FROM bank_loan_data;
+
+
+-- Average Interest Rate (%)
+SELECT
+    ROUND(AVG(int_rate) * 100, 2) AS Average_Interest_Rate
+FROM bank_loan_data;
+
+
+-- Average Debt-to-Income Ratio (%)
+SELECT
+    ROUND(AVG(dti) * 100, 2) AS Average_DTI
+FROM bank_loan_data;
+
+
+
+/* ===============================
+   GOOD LOAN ANALYSIS
+   =============================== */
+
+-- Good Loan Percentage (Fully Paid + Current)
+SELECT
+    ROUND(
+        COUNT(CASE WHEN loan_status IN ('Fully Paid', 'Current') THEN id END) * 100.0
+        / COUNT(id),
+        2
+    ) AS Good_Loan_Percentage
+FROM bank_loan_data;
+
+
+-- Good Loan Applications
+SELECT
+    COUNT(id) AS Good_Loan_Applications
+FROM bank_loan_data
+WHERE loan_status IN ('Fully Paid', 'Current');
+
+
+-- Good Loan Funded Amount
+SELECT
+    SUM(loan_amount) AS Good_Loan_Funded_Amount
+FROM bank_loan_data
+WHERE loan_status IN ('Fully Paid', 'Current');
+
+
+-- Good Loan Amount Received
+SELECT
+    SUM(total_payment) AS Good_Loan_Amount_Received
+FROM bank_loan_data
+WHERE loan_status IN ('Fully Paid', 'Current');
+
+
+
+/* ===============================
+   BAD LOAN ANALYSIS
+   =============================== */
+
+-- Bad Loan Percentage (Charged Off)
+SELECT
+    ROUND(
+        COUNT(CASE WHEN loan_status = 'Charged Off' THEN id END) * 100.0
+        / COUNT(id),
+        2
+    ) AS Bad_Loan_Percentage
+FROM bank_loan_data;
+
+
+-- Bad Loan Applications
+SELECT
+    COUNT(id) AS Bad_Loan_Applications
+FROM bank_loan_data
+WHERE loan_status = 'Charged Off';
+
+
+-- Bad Loan Funded Amount
+SELECT
+    SUM(loan_amount) AS Bad_Loan_Funded_Amount
+FROM bank_loan_data
+WHERE loan_status = 'Charged Off';
+
+
+-- Bad Loan Amount Received
+SELECT
+    SUM(total_payment) AS Bad_Loan_Amount_Received
+FROM bank_loan_data
+WHERE loan_status = 'Charged Off';
+
+
+
+/* ===============================
+   TREND ANALYSIS
+   =============================== */
+
+-- Monthly Trends by Issue Date
+SELECT
+    MONTH(issue_date) AS Month_Number,
+    DATENAME(MONTH, issue_date) AS Month_Name,
+    COUNT(id) AS Total_Loan_Applications,
+    SUM(loan_amount) AS Total_Funded_Amount,
+    SUM(total_payment) AS Total_Amount_Received
+FROM bank_loan_data
+GROUP BY
+    MONTH(issue_date),
+    DATENAME(MONTH, issue_date)
+ORDER BY
+    Month_Number;
+
+
+
+/* ===============================
+   REGIONAL ANALYSIS
+   =============================== */
+
+-- Regional Analysis by State
+SELECT
+    address_state,
+    COUNT(id) AS Total_Loan_Applications,
+    SUM(loan_amount) AS Total_Funded_Amount,
+    SUM(total_payment) AS Total_Amount_Received
+FROM bank_loan_data
+GROUP BY
+    address_state
+ORDER BY
+    address_state;
+
+
+
+/* ===============================
+   SEGMENTATION ANALYSIS
+   =============================== */
+
+-- Loan Term Analysis
+SELECT
+    term,
+    COUNT(id) AS Total_Loan_Applications,
+    SUM(loan_amount) AS Total_Funded_Amount,
+    SUM(total_payment) AS Total_Amount_Received
+FROM bank_loan_data
+GROUP BY
+    term
+ORDER BY
+    term;
+
+
+-- Employee Length Analysis
+SELECT
+    emp_length,
+    COUNT(id) AS Total_Loan_Applications,
+    SUM(loan_amount) AS Total_Funded_Amount,
+    SUM(total_payment) AS Total_Amount_Received
+FROM bank_loan_data
+GROUP BY
+    emp_length
+ORDER BY
+    emp_length ASC;
+
+
+-- Loan Purpose Analysis
+SELECT
+    purpose,
+    COUNT(id) AS Total_Loan_Applications,
+    SUM(loan_amount) AS Total_Funded_Amount,
+    SUM(total_payment) AS Total_Amount_Received
+FROM bank_loan_data
+GROUP BY
+    purpose
+ORDER BY
+    Total_Loan_Applications DESC;
+
+
+-- Home Ownership Analysis
+SELECT
+    home_ownership,
+    COUNT(id) AS Total_Loan_Applications,
+    SUM(loan_amount) AS Total_Funded_Amount,
+    SUM(total_payment) AS Total_Amount_Received
+FROM bank_loan_data
+GROUP BY
+    home_ownership
+ORDER BY
+    Total_Loan_Applications DESC;
